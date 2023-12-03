@@ -156,26 +156,28 @@ export default {
                         <img :src="product.image" alt="Product Image" />
                     </div>
                     <div class="product-detail">
-                        <div :class="['title', formatTitle(product.category)]">
-                            <h3>{{ product.title }}</h3>
+                        <div class="product-detail-top">
+                            <h3 :class="['title', formatTitle(product.category)]">{{ product.title }}</h3>
+                            <div class="sub-title">
+                                <span> {{ product.category }}</span>
+                                <div class="rating">
+                                    <span> {{ formatRating(product.rating) }}</span>
+                                    <span v-for="i in 5" :key="i"
+                                        :class="{ 'circle': true, 'filled': i <= Math.floor(currentProduct.rating.rate) }"></span>
+                                </div>
+                            </div>
+                            <div class="description">
+                                <p>{{ product.description }}</p>
+                            </div>
                         </div>
-                        <div class="sub-title">
-                            <p> {{ product.category }}</p>
-                            <p> {{ formatRating(product.rating) }}</p>
-                            <span v-for="i in 5" :key="i"
-                                :class="{ 'circle': true, 'filled': i <= Math.floor(currentProduct.rating.rate) }"></span>
-                        </div>
-                        <div class="description">
-                            <p>{{ product.description }}</p>
-                        </div>
-                        <div class="price">
-                            <p :class="formatPrice(product.category)">&dollar;{{ product.price }}</p>
-                        </div>
-                        <div class="button">
-                            <button :style="formatButtonBuy(product.category)" type="button" class="btn-buy">Buy
-                                Now</button>
-                            <button :style="formatButtonNext(product.category)" type="button" @click="nextProduct"
-                                class="btn-next">Next Product</button>
+                        <div class="product-detail-bottom">
+                            <span :class="formatPrice(product.category)">&dollar;{{ product.price }}</span>
+                            <div class="button">
+                                <button :style="formatButtonBuy(product.category)" type="button" class="btn-buy">Buy
+                                    Now</button>
+                                <button :style="formatButtonNext(product.category)" type="button" @click="nextProduct"
+                                    class="btn-next">Next Product</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -187,12 +189,11 @@ export default {
                     </div>
                     <div class="product-detail-unavailable">
                         <p>{{ currentProduct.description }}</p>
-                        <div class="button">
+                        <div class="button-unavailable">
                             <button :style="formatButtonNext(currentProduct.category)" type="button" @click="nextProduct"
-                                class="btn-next">Next Product</button>
+                                class="btn-next-unavailable">Next Product</button>
                         </div>
                     </div>
-
                 </div>
             </div>
         </div>
