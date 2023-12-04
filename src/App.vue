@@ -1,12 +1,11 @@
 <template>
   <div id="app">
-    <ProductDisplay/>
+    <ProductDisplay />
   </div>
 </template>
 
 <script>
 import ProductDisplay from './components/ProductDisplay.vue';
-
 
 export default {
   name: 'App',

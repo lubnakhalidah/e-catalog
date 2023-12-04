@@ -1,4 +1,5 @@
 <script>
+import LoadingSkeleton from './ProductDisplayLoader.vue'
 
 export default {
     name: 'ProductDisplay',
@@ -7,6 +8,8 @@ export default {
             products: [],
             currentIndex: 0,
             hasUnavailable: false,
+            loading: true,
+            loadingNextProduct: false,
         }
     },
     computed: {
@@ -20,50 +23,59 @@ export default {
     },
     methods: {
         async callProductAPI() {
-            const productApi = await fetch('https://fakestoreapi.com/products')
-            const products = await productApi.json()
+            setTimeout(async () => {
+                const productApi = await fetch('https://fakestoreapi.com/products')
+                const products = await productApi.json()
+                this.loading = false;
 
-            // const mensClothingIndex = products.findIndex(product => product.category.toLowerCase() === 'men\'s clothing');
-            const womensClothingIndex = products.findIndex(product => product.category.toLowerCase() === 'women\'s clothing');
+                const womensClothingIndex = products.findIndex(product => product.category.toLowerCase() === 'women\'s clothing');
 
+                const unavailableProduct = {
+                    id: 999,
+                    title: 'Unavailable Product',
+                    category: 'unavailable',
+                    rating: 0,
+                    description: 'This product is unavailable to show',
+                    price: 0,
+                    image: '@/assets/images/sad-face.svg',
+                    available: false,
+                };
 
-            // for (const product of products) {
-            //     if (product.category.toLowerCase() === 'unavailable') {
-            //         hasUnavailable = true;
-            //         break;
-            //     }
-            // }
-            // Tambahkan satu produk "unavailable" di antara "mens clothing" dan "womens clothing"
+                products.forEach(product => {
+                    product.available = product.category.toLowerCase() !== 'unavailable';
+                });
 
-            const unavailableProduct = {
-                id: 999, // Atur id yang unik
-                title: 'Unavailable Product',
-                category: 'unavailable',
-                rating: 0,
-                description: 'This product is unavailable to show',
-                price: 0,
-                image: '@/assets/images/sad-face.svg', // Ganti dengan URL gambar sesuai kebutuhan
-                available: false,
-            };
+                const repeatCount = 10;
 
-            products.forEach(product => {
-                product.available = product.category.toLowerCase() !== 'unavailable';
-            });
-            const repeatCount = 2;
+                for (let i = 0; i < repeatCount; i++) {
+                    products.splice(womensClothingIndex, 0, { ...unavailableProduct, id: i + 999 });
+                }
 
-            for (let i = 0; i < repeatCount; i++) {
-                products.splice(womensClothingIndex, 0, { ...unavailableProduct, id: i + 999 });
-            }
+                this.hasUnavailable = products.some(product => !product.available);
 
-            this.hasUnavailable = products.some(product => !product.available);
+                this.products = products
+                // console.log(products);
 
+                this.loading = false;
 
-
-            this.products = products
-            console.log(products);
+            }, 1000);
         },
         nextProduct() {
-            this.currentIndex = (this.currentIndex + 1) % this.filteredProducts.length
+            this.loadingNextProduct = true;
+            setTimeout(() => {
+                this.currentIndex = (this.currentIndex + 1) % this.filteredProducts.length
+                this.loadingNextProduct = false
+            }, 1000);
+
+        },
+        formatBackground(category) {
+            if (category === "men's clothing") {
+                return 'bg-blue-light'
+            } else if (category === "women's clothing") {
+                return 'bg-pink'
+            } else {
+                return 'bg-light-grey'
+            }
         },
         formatRating(rating) {
             return `${rating.rate}/5`
@@ -113,41 +125,30 @@ export default {
                 }
             } else {
                 return {
-                    'color': 'var(--white)',
-                    'border': '1px solid var(--black)'
+                    'background-color': 'var(--white)',
+                    'color': 'var(--black)',
+                    'border': '2px solid var(--black)'
                 }
             }
         }
-        //         formatButton(category) {
-        //     if (category === "men's clothing") {
-        //         return {
-        //             'background-color': 'var(--blue-dark)',
-        //             'border-color': 'var(--blue-dark)',
-        //         };
-        //     } else if (category === "women's clothing") {
-        //         return {
-        //             'background-color': 'var(--purple-dark)',
-        //             'border-color': 'var(--purple-dark)',
-        //         };
-        //     } else {
-        //         return {
-        //             'background-color': 'var(--white)',
-        //             'border-color': 'var(--white)',
-        //         };
-        //     }
-        // }
     },
     mounted() {
         this.callProductAPI()
+    },
+    components: {
+        LoadingSkeleton,
     }
 }
 </script>
 
 <template>
     <div class="container">
-        <div class="container bg-blue-light">
+
+        <LoadingSkeleton v-if="loading || loadingNextProduct" />
+
+        <div :class="['container', formatBackground(currentProduct.category)]" v-else>
             <div class="overlay">
-                <img src="../assets/images/bg-pattern.svg" alt="background men" class="overlay-background">
+                <img src="../assets/images/bg-pattern.svg" alt="background pattern" class="overlay-background">
             </div>
 
             <div class="product-card" v-if="currentProduct.available">
@@ -182,9 +183,9 @@ export default {
                     </div>
                 </div>
             </div>
-            <div class="product-card" v-else>
+            <div v-else class="product-card">
                 <div class="unavailable-container">
-                    <div class="unavailable-image">
+                    <div class="overlay">
                         <img src="@/assets/images/sad-face.svg" alt="">
                     </div>
                     <div class="product-detail-unavailable">
